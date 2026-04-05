@@ -9,6 +9,7 @@ const ProductList = () => {
   const dispatch = useDispatch();
   const { items, loading } = useSelector((state) => state.products);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
@@ -18,6 +19,17 @@ const ProductList = () => {
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
+
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchTerm(searchInput);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchInput]);
 
   const handleAdd = () => {
     setEditingProduct(null);
@@ -117,7 +129,7 @@ const ProductList = () => {
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Out of Stock</p>
-            <p className="text-xl font-bold text-slate-800">{items.filter(i => Number(i.stock) === 0).length}</p>
+            <p className="text-xl font-bold text-slate-800">{items.filter(i => i.stock !== null && i.stock !== undefined && Number(i.stock) === 0).length}</p>
           </div>
         </div>
       </div>
@@ -131,8 +143,8 @@ const ProductList = () => {
           type="text"
           placeholder="Search products by name or category..."
           className="block w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary-50/50 focus:border-primary-500 shadow-sm transition-all"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
         />
       </div>
 
@@ -176,9 +188,9 @@ const ProductList = () => {
                     <div className="text-sm font-bold text-slate-900">${Number(item.price).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {item.stock > 10 ? (
+                    {Number(item.stock) > 10 ? (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">In Stock</span>
-                    ) : item.stock > 0 ? (
+                    ) : Number(item.stock) > 0 ? (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">Low Stock</span>
                     ) : (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">Out of Stock</span>
